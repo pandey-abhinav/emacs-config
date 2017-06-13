@@ -8,19 +8,21 @@
 (add-to-list 'package-archives '("elpy" . "https://jorgenschaefer.github.io/packages/"))
 
 (defun set-exec-path-from-shell-PATH ()
-  (let ((path-from-shell (replace-regexp-in-string
-                          "[ \t\n]*$"
-                          ""
-                          (shell-command-to-string "$SHELL --login -i -c 'echo $PATH'"))))
-       (setenv "PATH" path-from-shell)
-       (setq eshell-path-env path-from-shell)
-       (setq exec-path (split-string path-from-shell path-separator))))
-(when window-system (set-exec-path-from-shell-PATH))
+    (let ((path-from-shell (replace-regexp-in-string
+                            "[ \t\n]*$"
+                            ""
+                            (shell-command-to-string "$SHELL --login -i -c 'echo $PATH'"))))
+         (setenv "PATH" path-from-shell)
+         (setq eshell-path-env path-from-shell)
+         (setq exec-path (split-string path-from-shell path-separator)))
+    (exec-path-from-shell-initialize)
+)
+  (when window-system (set-exec-path-from-shell-PATH))
 
 (set 'mac-command-modifier 'meta)
-(set     'mac-option-modifier 'super)
-(set     'ns-function-modifier 'hyper)
-(set     'mac-control-modifier 'control)
+(set 'mac-option-modifier 'super)
+(set 'ns-function-modifier 'hyper)
+(set 'mac-control-modifier 'control)
 
 (global-set-key (kbd "C-c c") 'comment-region)
 (global-set-key (kbd "C-c u") 'uncomment-region)
@@ -49,9 +51,8 @@
 (setq standard-indent 2)
 (setq js-indent-level 2)
 (setq-default truncate-lines t)
-(setq-default indent-tabs-mode nil)
 
-(add-to-list 'default-frame-alist '(height . 77))
+(add-to-list 'default-frame-alist '(height . 71))
 (add-to-list 'default-frame-alist '(width . 236))
 
 (line-number-mode t)
@@ -76,18 +77,20 @@
 (set-face-attribute 'font-lock-type-face nil :weight 'bold)
 (set-face-attribute 'font-lock-keyword-face nil :weight 'bold)
 (set-face-attribute 'font-lock-function-name-face nil :weight 'bold)
-(set-face-attribute 'font-lock-string-face nil :foreground "#ff8c1a" :slant 'italic)
+(set-face-attribute 'font-lock-constant-face nil :foreground "#00b3b3")
+(set-face-attribute 'font-lock-string-face nil :foreground "#ff9933" :slant 'italic)
 (set-face-attribute 'font-lock-comment-face nil :foreground "#aaaaaa" :slant 'italic)
+(set-face-attribute 'font-lock-builtin-face nil :foreground "#8080ff" :weight 'bold)
 
-(defun increase-display-font()
+(defun display-normal()
   (interactive)
-  (set-frame-font "DejaVu Sans Mono-11"))
+  (set-frame-font "Consolas-12"))
 
-(defun decrease-display-font()
+(defun display-benq()
   (interactive)
-  (set-frame-font "DejaVu Sans Mono-10"))
+  (set-frame-font "Consolas-11"))
 
-(decrease-display-font)
+(display-normal)
 
 (require 'cl-lib)
 
@@ -108,10 +111,36 @@
 (setq neo-window-width 35)
 (setq-default  neo-smart-open t)
 (setq neo-hidden-regexp-list '("\\.pyc$" "~$" "^#.*#$" "\\.elc$"))
-(global-set-key [f8] 'neotree-toggle)
+(global-set-key (kbd "C-c n") 'neotree-toggle)
 
-(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-(add-hook 'js2-mode-hook 'flycheck-mode)
+(add-to-list 'load-path "~/.emacs.d/tern/emacs/")
+(autoload 'tern-mode "tern.el" nil t)
+(add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode))
+
+(defun my/rjsx-mode-hook()
+  (flycheck-select-checker 'javascript-eslint)
+  (flycheck-mode)
+  (tern-mode t)
+  (eval-after-load 'tern
+    '(progn
+       (require 'tern-auto-complete)
+       (tern-ac-setup)))
+)
+
+(add-hook 'rjsx-mode-hook 'my/rjsx-mode-hook)
+
+;; (require 'flycheck)
+;; (require 'js2-mode)
+;; (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-jsx-mode))
+;; (setq js2-mode-show-parse-errors nil)
+;; (setq js2-mode-show-strict-warnings nil)
+;; (let ((checkers (get 'javascript-eslint 'flycheck-next-checkers)))
+;;   (put 'javascript-eslint 'flycheck-next-checkers
+;;        (remove '(warning . javascript-jscs) checkers)))
+;; (defun setup-js2-mode ()
+;;   (flycheck-select-checker 'javascript-eslint)
+;;   (flycheck-mode))
+;; (add-hook 'js2-mode-hook #'setup-js2-mode)
 
 (require 'web-mode)
 
@@ -133,6 +162,7 @@
   (setq web-mode-content-type "css"))
 
 
+;; (add-to-list 'auto-mode-alist '("\\.js\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
@@ -163,9 +193,8 @@
   (setq tab-width 2)
   (setq indent-tabs-mode nil)
   (setq gofmt-command "goimports")
-  (load-file "$GOPATH/src/golang.org/x/tools/cmd/oracle/oracle.el")
-  (local-set-key (kbd "C-.") 'godef-jump)
-  (local-set-key (kbd "C-,") 'pop-tag-mark)
+  (local-set-key (kbd "M-.") 'godef-jump)
+  (local-set-key (kbd "M-,") 'pop-tag-mark)
   (add-hook 'before-save-hook 'gofmt-before-save))
 
 (add-hook 'go-mode-hook 'my/go-mode-hook)
@@ -182,6 +211,11 @@
 (add-hook 'yaml-mode-hook 'my/yaml-mode-hook)
 
 (require 'thrift-mode)
+
+(autoload 'asm86-mode "packages/asm86-mode.el")
+(setq auto-mode-alist
+   (append '(("\\.asm\\'" . asm86-mode) ("\\.inc\\'" . asm86-mode))
+   auto-mode-alist))
 
 (require 'jedi)
 (add-to-list 'ac-sources 'ac-source-jedi-direct)
@@ -252,7 +286,7 @@
 
 (ac-config-default)
 (global-auto-complete-mode t)
-
+(add-to-list 'ac-modes 'thrift-mode)
 (setq ac-auto-start t)
 (setq ac-ignore-case nil)
 (setq ac-auto-show-menu t)
@@ -263,8 +297,18 @@
 (quote
 ("a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" default))))
 
-(setq sml/theme 'light)
+(setq sml/shorten-directory t
+      sml/shorten-modes t
+      sml/theme 'light
+      sml/vc-mode-show-backend t)
 (sml/setup)
+
+(set-face-attribute 'mode-line nil
+                    :background "wheat1"
+                    :box '(:line-width 2 :color "wheat1"))
+(set-face-attribute 'mode-line-inactive nil
+                    :background "wheat3"
+                    :box '(:line-width 2 :color "wheat3"))
 
 (global-flycheck-mode 1)
 
@@ -279,24 +323,33 @@
 
 (defun my/org-mode-hook ()
   (org-bullets-mode 1)
+  (set 'org-return-follows-link t)
   (visual-line-mode 1)
-  (set-face-attribute 'org-level-1 nil :foreground "black" :weight 'bold)
-  (set-face-attribute 'org-level-2 nil :foreground "black" :weight 'bold)
-  (set-face-attribute 'org-level-3 nil :foreground "black" :weight 'bold :slant 'italic)
-  (set-face-attribute 'org-level-4 nil :foreground "black" :slant 'italic)
-  (set-face-attribute 'org-level-5 nil :foreground "black" :weight 'light :slant 'italic))
+  (set-face-attribute 'org-level-1 nil :weight 'bold)
+  (set-face-attribute 'org-level-2 nil :weight 'bold)
+  (set-face-attribute 'org-level-3 nil :weight 'bold)
+  (set-face-attribute 'org-level-4 nil :slant 'italic)
+  (set-face-attribute 'org-level-5 nil :slant 'italic))
 
 (set 'org-todo-keywords
-     '((sequence "TODO" "WAITING" "REVIEW" "|" "DONE" "DELEGATED")))
+     '((sequence "WEEK" "MONTH" "QUARTER" "|" "DONE")))
 
 (set 'org-todo-keyword-faces
-     '(("TODO" . (:foreground "red" :weight bold :underline t))
-       ("WAITING" . (:foreground "orange" :weight bold :slant italic :underline t))
-       ("REVIEW" . (:foreground "orange" :weight bold :slant italic :underline t))))
+     '(
+       ("WEEK" . (:foreground "red" :weight bold :underline t))
+       ("MONTH" . (:foreground "orange" :slant italic :underline t))
+       ("QUARTER" . (:foreground "gold4" :slant italic :underline t))
+       ))
 
 (set 'org-done-keyword-faces
-     '(("DONE" . (:foreground "green" :weight bold :underline t))
-       ("DELEGATED" . (:foreground "green" :weight bold :underline t))))
+     '(
+       ("DONE" . (:foreground "green" :weight bold :underline t))
+       ))
+
+(setq org-link-abbrev-alist
+      '(
+        ("quasars"  . "file:/Users/predicate/Uber/Quasars/")
+        ))
 
 (set 'org-startup-indented 1)
 (set 'org-hide-leading-stars t)
@@ -305,6 +358,10 @@
 (add-hook 'org-mode-hook 'my/org-mode-hook)
 
 (add-hook 'find-file-hook (lambda () (setq buffer-read-only t)))
+
+(setq initial-major-mode 'org-mode)
+
+;; (find-file "~/Google Drive/index.org")
 
 (defun trailing-whitespace()
   (set 'show-trailing-whitespace t))
@@ -327,4 +384,17 @@
 
 (setq sentence-end-double-space nil)
 
-(setq ring-bell-function 'ignore)
+(defun rename-file-and-buffer (new-name)
+  "Renames both current buffer and file it's visiting to NEW-NAME."
+  (interactive "sNew name: ")
+  (let ((name (buffer-name))
+        (filename (buffer-file-name)))
+    (if (not filename)
+        (message "Buffer '%s' is not visiting a file!" name)
+      (if (get-buffer new-name)
+          (message "A buffer named '%s' already exists!" new-name)
+        (progn
+          (rename-file filename new-name 1)
+          (rename-buffer new-name)
+          (set-visited-file-name new-name)
+          (set-buffer-modified-p nil))))))
