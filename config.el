@@ -8,16 +8,16 @@
 (add-to-list 'package-archives '("elpy" . "https://jorgenschaefer.github.io/packages/"))
 
 (defun set-exec-path-from-shell-PATH ()
-    (let ((path-from-shell (replace-regexp-in-string
-                            "[ \t\n]*$"
-                            ""
-                            (shell-command-to-string "$SHELL --login -i -c 'echo $PATH'"))))
-         (setenv "PATH" path-from-shell)
-         (setq eshell-path-env path-from-shell)
-         (setq exec-path (split-string path-from-shell path-separator)))
-    (exec-path-from-shell-initialize)
-)
-  (when window-system (set-exec-path-from-shell-PATH))
+  (let ((path-from-shell (replace-regexp-in-string
+			  "[ \t\n]*$"
+			  ""
+			  (shell-command-to-string "$SHELL --login -i -c 'echo $PATH'"))))
+    (setenv "PATH" path-from-shell)
+    (setq eshell-path-env path-from-shell)
+    (setq exec-path (split-string path-from-shell path-separator)))
+  (exec-path-from-shell-initialize)
+  )
+(when window-system (set-exec-path-from-shell-PATH))
 
 (set 'mac-command-modifier 'meta)
 (set 'mac-option-modifier 'super)
@@ -50,6 +50,7 @@
 (setq c-basic-offset 2)
 (setq standard-indent 2)
 (setq js-indent-level 2)
+(setq-default indent-tabs-mode nil)
 (setq-default truncate-lines t)
 
 (add-to-list 'default-frame-alist '(height . 71))
@@ -74,17 +75,19 @@
 (set-face-attribute 'show-paren-match nil
                     :weight 'extra-bold :foreground "grey" :background "red")
 
-(set-face-attribute 'font-lock-type-face nil :weight 'bold)
-(set-face-attribute 'font-lock-keyword-face nil :weight 'bold)
-(set-face-attribute 'font-lock-function-name-face nil :weight 'bold)
-(set-face-attribute 'font-lock-constant-face nil :foreground "#00b3b3")
-(set-face-attribute 'font-lock-string-face nil :foreground "#ff9933" :slant 'italic)
-(set-face-attribute 'font-lock-comment-face nil :foreground "#aaaaaa" :slant 'italic)
-(set-face-attribute 'font-lock-builtin-face nil :foreground "#8080ff" :weight 'bold)
+;; (set-face-attribute 'font-lock-type-face nil :weight 'bold)
+;; (set-face-attribute 'font-lock-keyword-face nil :weight 'bold)
+;; (set-face-attribute 'font-lock-function-name-face nil :weight 'bold)
+(set-face-attribute 'font-lock-variable-name-face nil :foreground "orange")
+(set-face-attribute 'font-lock-constant-face nil :foreground "#e23860")
+(set-face-attribute 'font-lock-string-face nil :foreground "sienna" :slant 'italic)
+(set-face-attribute 'font-lock-comment-face nil :foreground "#bbbbbb" :slant 'oblique)
+(set-face-attribute 'font-lock-doc-face nil :foreground "#aaaaaa" :slant 'italic)
+(set-face-attribute 'font-lock-builtin-face nil :foreground "#00b3b3")
 
 (defun display-normal()
   (interactive)
-  (set-frame-font "Consolas-12"))
+  (set-frame-font "Consolas-11"))
 
 (defun display-benq()
   (interactive)
@@ -106,27 +109,23 @@
 
 (require 'neotree)
 (require 'all-the-icons)
-
 (setq neo-theme 'icons)
 (setq neo-window-width 35)
 (setq-default  neo-smart-open t)
 (setq neo-hidden-regexp-list '("\\.pyc$" "~$" "^#.*#$" "\\.elc$"))
 (global-set-key (kbd "C-c n") 'neotree-toggle)
 
-(add-to-list 'load-path "~/.emacs.d/tern/emacs/")
-(autoload 'tern-mode "tern.el" nil t)
-(add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode))
-
 (defun my/rjsx-mode-hook()
-  (flycheck-select-checker 'javascript-eslint)
-  (flycheck-mode)
+  ;; (setq flycheck-eslintrc "~/.eslintrc")
+  ;; (flycheck-select-checker 'javascript-eslint)
+  ;; (flycheck-mode)
   (tern-mode t)
   (eval-after-load 'tern
-    '(progn
-       (require 'tern-auto-complete)
-       (tern-ac-setup)))
-)
+    '(progn (require 'tern-auto-complete) (tern-ac-setup))))
 
+(autoload 'tern-mode "tern.el" nil t)
+(add-to-list 'load-path "~/.emacs.d/tern/emacs/")
+(add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode))
 (add-hook 'rjsx-mode-hook 'my/rjsx-mode-hook)
 
 ;; (require 'flycheck)
@@ -143,7 +142,6 @@
 ;; (add-hook 'js2-mode-hook #'setup-js2-mode)
 
 (require 'web-mode)
-
 (defun my/web-mode-hook ()
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-css-indent-offset 2)
@@ -152,32 +150,24 @@
   (setq web-mode-script-padding 1)
   (setq web-mode-block-padding 0)
   (local-set-key (kbd "RET") 'newline-and-indent))
-
 (define-derived-mode web-html-mode web-mode "WebHTML"
   (web-mode)
   (setq web-mode-content-type "html"))
-
 (define-derived-mode web-css-mode web-mode "WebCss"
   (web-mode)
   (setq web-mode-content-type "css"))
-
-
 ;; (add-to-list 'auto-mode-alist '("\\.js\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
-
 (add-to-list 'auto-mode-alist '("\\.css?\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.scss?\\'" . web-mode))
-
 (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.[agj]sp\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
-
 (add-hook 'web-mode-hook  'my/web-mode-hook)
-
 (setq web-mode-enable-current-element-highlight t)
 (setq web-mode-ac-sources-alist
       '(("css" . (ac-source-css-property))
@@ -185,10 +175,8 @@
 
 (require 'go-eldoc)
 (require 'go-autocomplete)
-
 (with-eval-after-load 'go-mode
   (require 'go-autocomplete))
-
 (defun my/go-mode-hook ()
   (setq tab-width 2)
   (setq indent-tabs-mode nil)
@@ -196,17 +184,14 @@
   (local-set-key (kbd "M-.") 'godef-jump)
   (local-set-key (kbd "M-,") 'pop-tag-mark)
   (add-hook 'before-save-hook 'gofmt-before-save))
-
 (add-hook 'go-mode-hook 'my/go-mode-hook)
 (add-hook 'go-mode-hook 'go-eldoc-setup)
 (setenv "GOPATH" "/Users/predicate/gocode")
 (add-to-list 'exec-path "/Users/predicate/gocode/bin")
 
 (require 'yaml-mode)
-
 (defun my/yaml-mode-hook ()
   (define-key yaml-mode-map "\C-m" 'newline-and-indent))
-
 (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
 (add-hook 'yaml-mode-hook 'my/yaml-mode-hook)
 
@@ -224,8 +209,9 @@
 
 (defun my/python-mode-hook ()
   (require 'elpy)
-  (local-set-key (kbd "C-.") 'elpy-goto-definition)
-  (local-set-key (kbd "C-,") 'pop-tag-mark)
+  (setq py-use-font-lock-doc-face-p t)
+  (local-set-key (kbd "M-.") 'elpy-goto-definition)
+  (local-set-key (kbd "M-,") 'pop-tag-mark)
   (elpy-use-ipython)
   (setq elpy-rpc-timeout 10)
   (setq elpy-modules
@@ -239,34 +225,28 @@
 (require 'helm)
 (require 'helm-config)
 (require 'helm-projectile)
-
 (global-set-key (kbd "M-x") #'helm-M-x)
 (global-set-key (kbd "C-x b") 'helm-mini)
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
 (global-set-key (kbd "C-c h") 'helm-command-prefix)
 (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
 (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
-
 (setq helm-split-window-in-side-p t)
 (setq helm-autoresize-min-height 20)
 (setq helm-autoresize-max-height 20)
 (set-face-attribute 'helm-match nil :weight 'bold)
-
 (helm-mode 1)
 (helm-projectile-on)
 (helm-autoresize-mode)
 
 (require 'popwin)
 (popwin-mode 1)
-
 (push '("^\*helm.+\*$" :regexp t) popwin:special-display-config)
-
+(push '("^\*neotree.+\*$" :regexp t) popwin:special-display-config)
 (add-hook 'helm-after-initialize-hook (lambda ()
                                         (popwin:display-buffer helm-buffer t)
                                         (popwin-mode -1)))
-
 (add-hook 'helm-cleanup-hook (lambda () (popwin-mode 1)))
-
 (when neo-persist-show
   (add-hook 'popwin:before-popup-hook
             (lambda () (setq neo-persist-show nil)))
@@ -279,11 +259,9 @@
 (set-face-attribute 'nlinum-current-line nil :foreground "red" :weight 'bold)
 
 (global-set-key (kbd "C-x o") 'ace-window)
-
 (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
 (require 'auto-complete-config)
-
 (ac-config-default)
 (global-auto-complete-mode t)
 (add-to-list 'ac-modes 'thrift-mode)
@@ -296,13 +274,11 @@
 '(custom-safe-themes
 (quote
 ("a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" default))))
-
 (setq sml/shorten-directory t
       sml/shorten-modes t
       sml/theme 'light
       sml/vc-mode-show-backend t)
 (sml/setup)
-
 (set-face-attribute 'mode-line nil
                     :background "wheat1"
                     :box '(:line-width 2 :color "wheat1"))
@@ -323,41 +299,36 @@
 
 (defun my/org-mode-hook ()
   (org-bullets-mode 1)
-  (set 'org-return-follows-link t)
   (visual-line-mode 1)
-  (set-face-attribute 'org-level-1 nil :weight 'bold)
-  (set-face-attribute 'org-level-2 nil :weight 'bold)
-  (set-face-attribute 'org-level-3 nil :weight 'bold)
-  (set-face-attribute 'org-level-4 nil :slant 'italic)
-  (set-face-attribute 'org-level-5 nil :slant 'italic))
 
-(set 'org-todo-keywords
-     '((sequence "WEEK" "MONTH" "QUARTER" "|" "DONE")))
+  (setq org-startup-indented 1)
+  (setq org-hide-leading-stars t)
+  (setq org-return-follows-link t)
+  (setq org-src-fontify-natively t)
+  (setq org-src-tab-acts-natively t)
+  (setq org-src-window-setup 'current-window)
+  (setq org-todo-keywords
+       '((sequence "TODO" "|" "DONE")))
+  (setq org-todo-keyword-faces
+       '(("TODO" . (:foreground "red" :weight bold :underline t))))
+  (setq org-done-keyword-faces
+       '(("DONE" . (:foreground "green" :weight bold :underline t))))
+  (setq org-link-abbrev-alist
+	'(("quasars"  . "file:/Users/predicate/Uber/Quasars/")))
+  ;; (set-face-attribute 'org-block-begin-line nil :weight 'bold)
+  ;; (set-face-attribute 'org-block nil :slant 'italic :background "linen")
+  ;; (set-face-attribute 'org-block-end-line nil :weight 'bold)
+  (set-face-attribute 'org-level-1 nil :height 1.25 :weight 'bold)
+  (set-face-attribute 'org-level-2 nil :height 1.2 :weight 'bold)
+  (set-face-attribute 'org-level-3 nil :height 1.15 :weight 'bold)
+  (set-face-attribute 'org-level-4 nil :height 1.1 :slant 'italic)
+  (set-face-attribute 'org-level-5 nil :height 1.05 :slant 'italic)
+  )
 
-(set 'org-todo-keyword-faces
-     '(
-       ("WEEK" . (:foreground "red" :weight bold :underline t))
-       ("MONTH" . (:foreground "orange" :slant italic :underline t))
-       ("QUARTER" . (:foreground "gold4" :slant italic :underline t))
-       ))
-
-(set 'org-done-keyword-faces
-     '(
-       ("DONE" . (:foreground "green" :weight bold :underline t))
-       ))
-
-(setq org-link-abbrev-alist
-      '(
-        ("quasars"  . "file:/Users/predicate/Uber/Quasars/")
-        ))
-
-(set 'org-startup-indented 1)
-(set 'org-hide-leading-stars t)
-(set 'org-src-fontify-natively t)
-(set 'org-src-window-setup 'current-window)
 (add-hook 'org-mode-hook 'my/org-mode-hook)
 
 (add-hook 'find-file-hook (lambda () (setq buffer-read-only t)))
+(add-hook 'before-save-hook (lambda () (setq buffer-read-only t)))
 
 (setq initial-major-mode 'org-mode)
 
