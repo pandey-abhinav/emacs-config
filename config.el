@@ -46,12 +46,16 @@
 (setq mouse-wheel-progressive-speed nil)
 (setq mouse-wheel-scroll-amount '(1 ((shift) . 1)))
 
-(setq tab-width 2)
-(setq c-basic-offset 2)
-(setq standard-indent 2)
-(setq js-indent-level 2)
-(setq-default indent-tabs-mode nil)
+(setq indent-tabs-mode nil)
+(setq tab-width 4)
+(setq c-basic-offset 4)
+(setq standard-indent 4)
+(setq js-indent-level 4)
 (setq-default truncate-lines t)
+
+(defun my/makefile-mode-hook()
+  (setq tab-width 4))
+(add-hook 'makefile-mode-hook 'my/makefile-mode-hook)
 
 (add-to-list 'default-frame-alist '(height . 71))
 (add-to-list 'default-frame-alist '(width . 236))
@@ -87,7 +91,7 @@
 
 (defun display-normal()
   (interactive)
-  (set-frame-font "Consolas-11"))
+  (set-frame-font "Consolas-10"))
 
 (defun display-benq()
   (interactive)
@@ -103,6 +107,7 @@
 (require 'multi-term)
 (set 'multi-term-program "/bin/bash")
 (set 'multi-term-buffer-name "term")
+(set 'multi-term-scroll-to-bottom-on-output "others")
 (global-set-key (kbd "C-x e") 'multi-term)
 (global-set-key (kbd "C-x n") 'multi-term-next)
 (global-set-key (kbd "C-x p") 'multi-term-prev)
