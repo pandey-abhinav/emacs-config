@@ -2,27 +2,27 @@
       user-mail-address "abhinav.predicate@gmail.com")
 
 (require 'package)
-(package-initialize)
 (add-to-list 'load-path "~/.emacs.d/packages/")
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
 (add-to-list 'package-archives '("elpy" . "https://jorgenschaefer.github.io/packages/"))
+(package-initialize)
 
 (defun set-exec-path-from-shell-PATH ()
-  (let ((path-from-shell (replace-regexp-in-string
-			  "[ \t\n]*$"
-			  ""
-			  (shell-command-to-string "$SHELL --login -i -c 'echo $PATH'"))))
+  (let ((path-from-shell
+	 (replace-regexp-in-string
+	  "[ \t\n]*$"
+	  ""
+	  (shell-command-to-string "$SHELL --login -i -c 'echo $PATH'"))))
     (setenv "PATH" path-from-shell)
     (setq eshell-path-env path-from-shell)
     (setq exec-path (split-string path-from-shell path-separator)))
-  (exec-path-from-shell-initialize)
-  )
+  (exec-path-from-shell-initialize))
 (when window-system (set-exec-path-from-shell-PATH))
 
-(set 'mac-command-modifier 'meta)
-(set 'mac-option-modifier 'super)
-(set 'ns-function-modifier 'hyper)
-(set 'mac-control-modifier 'control)
+(setq mac-command-modifier 'meta
+      mac-option-modifier 'super
+      mac-control-modifier 'control
+      ns-function-modifier 'hyper)
 
 (global-set-key (kbd "C-c c") 'comment-region)
 (global-set-key (kbd "C-c u") 'uncomment-region)
@@ -32,7 +32,7 @@
 (global-set-key (kbd "M-d") (lambda () (interactive) (delete-backward-char 1)))
 
 (defun do-nothing()
-  (interactive))
+      (interactive))
 
 (global-set-key [wheel-left] 'do-nothing)
 (global-set-key [wheel-right] 'do-nothing)
@@ -41,84 +41,112 @@
 (global-set-key [triple-wheel-left] 'do-nothing)
 (global-set-key [triple-wheel-right] 'do-nothing)
 
-(setq scroll-step 1)
-(setq mouse-wheel-follow-mouse 't)
-(setq mouse-wheel-progressive-speed nil)
-(setq mouse-wheel-scroll-amount '(1 ((shift) . 1)))
+(setq scroll-step 1
+	      mouse-wheel-follow-mouse t
+	      mouse-wheel-progressive-speed nil
+	      mouse-wheel-scroll-amount '(1 ((shift) . 1)))
 
-(setq indent-tabs-mode nil)
-(setq tab-width 4)
-(setq c-basic-offset 4)
-(setq standard-indent 4)
-(setq js-indent-level 4)
-(setq-default truncate-lines t)
+(setq inhibit-startup-screen t)
+(setq  window-split-keep-point nil)
+(setq-default truncate-lines t
+			  tab-width 4
+			  indent-tabs-mode nil)
 
-(defun my/makefile-mode-hook()
-  (setq tab-width 4))
-(add-hook 'makefile-mode-hook 'my/makefile-mode-hook)
-
-(add-to-list 'default-frame-alist '(height . 71))
-(add-to-list 'default-frame-alist '(width . 236))
-
-(line-number-mode t)
 (blink-cursor-mode 0)
+(line-number-mode t)
 (column-number-mode t)
-(transient-mark-mode t)
-
 (menu-bar-mode -1)
 (tool-bar-mode -1)
 (toggle-scroll-bar -1)
-(setq inhibit-startup-screen t)
+
+;; (defun my/makefile-mode-hook()
+;;   (setq tab-width 4))
+;; (add-hook 'makefile-mode-hook 'my/makefile-mode-hook)
+
+;; (defun my/sql-mode-hook()
+;;   (setq tab-width 4))
+;; (add-hook 'sql-mode-hook 'my/sql-mode-hook)
+
+(add-to-list 'default-frame-alist '(height . 65))
+(add-to-list 'default-frame-alist '(width . 236))
 
 (require 'paren)
-
+(set-face-attribute
+ 'show-paren-match nil :weight 'extra-bold :foreground "grey" :background "red")
+(setq show-paren-delay 0
+      show-paren-style 'mixed)
 (show-paren-mode 1)
-(setq show-paren-delay 0)
-(setq show-paren-style 'mixed)
-
-(set-face-attribute 'show-paren-match nil
-                    :weight 'extra-bold :foreground "grey" :background "red")
 
 ;; (set-face-attribute 'font-lock-type-face nil :weight 'bold)
 ;; (set-face-attribute 'font-lock-keyword-face nil :weight 'bold)
-;; (set-face-attribute 'font-lock-function-name-face nil :weight 'bold)
+(set-face-attribute 'font-lock-function-name-face nil :weight 'bold)
 (set-face-attribute 'font-lock-variable-name-face nil :foreground "orange")
 (set-face-attribute 'font-lock-constant-face nil :foreground "#e23860")
 (set-face-attribute 'font-lock-string-face nil :foreground "sienna" :slant 'italic)
-(set-face-attribute 'font-lock-comment-face nil :foreground "#bbbbbb" :slant 'oblique)
+(set-face-attribute 'font-lock-comment-face nil :foreground "#aaaaaa" :slant 'oblique)
 (set-face-attribute 'font-lock-doc-face nil :foreground "#aaaaaa" :slant 'italic)
 (set-face-attribute 'font-lock-builtin-face nil :foreground "#00b3b3")
 
-(defun display-normal()
+(defun display-laptop()
   (interactive)
-  (set-frame-font "Consolas-10"))
+  (set-frame-font "Consolas-12"))
 
 (defun display-benq()
   (interactive)
-  (set-frame-font "Consolas-11"))
+  (set-frame-font "Consolas-13"))
 
-(display-normal)
+(defun display-thunderbolt()
+  (interactive)
+  (set-frame-font "Consolas-14"))
+
+(display-laptop)
+
+(require 'nlinum)
+(setq nlinum-format " %d ")
+(setq nlinum-highlight-current-line t)
+(set-face-attribute 'nlinum-current-line nil :foreground "red" :weight 'bold)
+
+(require 'ledger-mode)
+(add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))
 
 (require 'cl-lib)
 
-(setq projectile-switch-project-action 'neotree-projectile-action)
+;; (setq projectile-switch-project-action 'neotree-projectile-action)
 (projectile-global-mode)
 
-(require 'multi-term)
-(set 'multi-term-program "/bin/bash")
-(set 'multi-term-buffer-name "term")
-(set 'multi-term-scroll-to-bottom-on-output "others")
-(global-set-key (kbd "C-x e") 'multi-term)
-(global-set-key (kbd "C-x n") 'multi-term-next)
-(global-set-key (kbd "C-x p") 'multi-term-prev)
+;; (require 'multi-term)
+;; (set 'multi-term-program "/bin/bash")
+;; (set 'multi-term-buffer-name "term")
+;; (set 'multi-term-scroll-to-bottom-on-output "others")
+;; (global-set-key (kbd "C-x e") 'multi-term)
+;; (global-set-key (kbd "C-x n") 'multi-term-next)
+;; (global-set-key (kbd "C-x p") 'multi-term-prev)
 
-(require 'neotree)
-(require 'all-the-icons)
-(setq neo-theme 'icons)
-(setq neo-window-width 35)
-(setq-default  neo-smart-open t)
-(setq neo-hidden-regexp-list '("\\.pyc$" "~$" "^#.*#$" "\\.elc$"))
-(global-set-key (kbd "C-c n") 'neotree-toggle)
+(require 'popwin)
+(popwin-mode 1)
+(push '("^\*helm.+\*$" :regexp t) popwin:special-display-config)
+;; (push '("^\*neotree.+\*$" :regexp t) popwin:special-display-config)
+(add-hook 'helm-after-initialize-hook
+	  (lambda ()
+	    (popwin:display-buffer helm-buffer t)
+	    (popwin-mode -1)))
+(add-hook 'helm-cleanup-hook
+	  (lambda ()
+	    (popwin-mode 1)))
+
+;; (require 'neotree)
+;; (require 'all-the-icons)
+;; (setq neo-theme 'icons
+;;       neo-window-width 35
+;;       neo-persist-show nil
+;;       neo-hidden-regexp-list '("\\.pyc$" "~$" "^#.*#$" "\\.elc$"))
+;; (setq-default  neo-smart-open t)
+;; (global-set-key (kbd "C-c n") 'neotree-toggle)
+;; (when neo-persist-show
+;;   (add-hook 'popwin:before-popup-hook
+;;             (lambda () (setq neo-persist-show nil)))
+;;   (add-hook 'popwin:after-popup-hook
+;;             (lambda () (setq neo-persist-show t))))
 
 (defun my/rjsx-mode-hook()
   ;; (setq flycheck-eslintrc "~/.eslintrc")
@@ -184,7 +212,6 @@
   (require 'go-autocomplete))
 (defun my/go-mode-hook ()
   (setq tab-width 2)
-  (setq indent-tabs-mode nil)
   (setq gofmt-command "goimports")
   (local-set-key (kbd "M-.") 'godef-jump)
   (local-set-key (kbd "M-,") 'pop-tag-mark)
@@ -212,19 +239,21 @@
 (add-hook 'python-mode-hook 'jedi:setup)
 (setq jedi:complete-on-dot t)
 
+(require 'elpy)
+
 (defun my/python-mode-hook ()
-  (require 'elpy)
   (setq py-use-font-lock-doc-face-p t)
-  (local-set-key (kbd "M-.") 'elpy-goto-definition)
-  (local-set-key (kbd "M-,") 'pop-tag-mark)
   (elpy-use-ipython)
   (setq elpy-rpc-timeout 10)
-  (setq elpy-modules
-        (elpy-module-company elpy-module-eldoc elpy-module-flymake
-                             elpy-module-pyvenv elpy-module-yasnippet
-                             elpy-module-django elpy-module-sane-defaults))
   (setq elpy-rpc-backend "jedi")
-  (elpy-enable))
+  (indent-guide-mode)
+  (delete `elpy-module-highlight-indentation elpy-modules)
+  (delete `elpy-module-django elpy-modules)
+  (delete `elpy-module-yasnippet elpy-modules)
+  (elpy-enable)
+  (local-set-key (kbd "M-.") 'jedi:goto-definition)
+  (local-set-key (kbd "M-,") 'jedi:goto-definition-pop-marker))
+
 (add-hook 'python-mode-hook 'my/python-mode-hook)
 
 (require 'helm)
@@ -244,25 +273,6 @@
 (helm-projectile-on)
 (helm-autoresize-mode)
 
-(require 'popwin)
-(popwin-mode 1)
-(push '("^\*helm.+\*$" :regexp t) popwin:special-display-config)
-(push '("^\*neotree.+\*$" :regexp t) popwin:special-display-config)
-(add-hook 'helm-after-initialize-hook (lambda ()
-                                        (popwin:display-buffer helm-buffer t)
-                                        (popwin-mode -1)))
-(add-hook 'helm-cleanup-hook (lambda () (popwin-mode 1)))
-(when neo-persist-show
-  (add-hook 'popwin:before-popup-hook
-            (lambda () (setq neo-persist-show nil)))
-  (add-hook 'popwin:after-popup-hook
-            (lambda () (setq neo-persist-show t))))
-
-(require 'nlinum)
-(setq nlinum-format " %d ")
-(setq nlinum-highlight-current-line t)
-(set-face-attribute 'nlinum-current-line nil :foreground "red" :weight 'bold)
-
 (global-set-key (kbd "C-x o") 'ace-window)
 (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
@@ -280,9 +290,9 @@
 (quote
 ("a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" default))))
 (setq sml/shorten-directory t
-      sml/shorten-modes t
-      sml/theme 'light
-      sml/vc-mode-show-backend t)
+	  sml/shorten-modes t
+	  sml/theme 'light
+	  sml/vc-mode-show-backend t)
 (sml/setup)
 (set-face-attribute 'mode-line nil
                     :background "wheat1"
@@ -298,7 +308,7 @@
 (global-subword-mode 1)
 
 (global-hl-line-mode t)
-(set-face-background 'hl-line "ffff99") ;; set the face-background for hl-line
+(set-face-background 'hl-line "#fff2cc") ;; set the face-background for hl-line
 
 (require 'org-bullets)
 
@@ -306,28 +316,26 @@
   (org-bullets-mode 1)
   (visual-line-mode 1)
 
-  (setq org-startup-indented 1)
-  (setq org-hide-leading-stars t)
-  (setq org-return-follows-link t)
-  (setq org-src-fontify-natively t)
-  (setq org-src-tab-acts-natively t)
-  (setq org-src-window-setup 'current-window)
-  (setq org-todo-keywords
-       '((sequence "TODO" "|" "DONE")))
-  (setq org-todo-keyword-faces
-       '(("TODO" . (:foreground "red" :weight bold :underline t))))
-  (setq org-done-keyword-faces
-       '(("DONE" . (:foreground "green" :weight bold :underline t))))
-  (setq org-link-abbrev-alist
-	'(("quasars"  . "file:/Users/predicate/Uber/Quasars/")))
+  (setq org-startup-indented 1
+        org-hide-leading-stars t
+        org-return-follows-link t
+        org-image-actual-width nil
+        org-src-fontify-natively nil
+        org-src-tab-acts-natively t
+        org-src-window-setup 'current-window
+        org-todo-keywords '((sequence "TODO" "|" "DONE"))
+        org-todo-keyword-faces '(("TODO" . (:foreground "red" :weight bold :underline t)))
+        org-done-keyword-faces '(("DONE" . (:foreground "green" :weight bold :underline t)))
+        org-link-abbrev-alist '(("quasars"  . "file:/Users/predicate/Uber/Quasars/")))
+
   ;; (set-face-attribute 'org-block-begin-line nil :weight 'bold)
   ;; (set-face-attribute 'org-block nil :slant 'italic :background "linen")
   ;; (set-face-attribute 'org-block-end-line nil :weight 'bold)
-  (set-face-attribute 'org-level-1 nil :height 1.25 :weight 'bold)
-  (set-face-attribute 'org-level-2 nil :height 1.2 :weight 'bold)
-  (set-face-attribute 'org-level-3 nil :height 1.15 :weight 'bold)
-  (set-face-attribute 'org-level-4 nil :height 1.1 :slant 'italic)
-  (set-face-attribute 'org-level-5 nil :height 1.05 :slant 'italic)
+  ;; (set-face-attribute 'org-level-1 nil :height 1.25)
+  ;; (set-face-attribute 'org-level-2 nil :height 1.2)
+  ;; (set-face-attribute 'org-level-3 nil :height 1.15)
+  ;; (set-face-attribute 'org-level-4 nil :height 1.1)
+  ;; (set-face-attribute 'org-level-5 nil :height 1.05)
   )
 
 (add-hook 'org-mode-hook 'my/org-mode-hook)
@@ -357,6 +365,8 @@
 
 (global-set-key (kbd "C-z") 'ask-before-closing)
 (global-set-key (kbd "C-x C-c") 'ask-before-closing)
+
+(setq ring-bell-function 'ignore)
 
 (setq sentence-end-double-space nil)
 
