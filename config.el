@@ -1,20 +1,18 @@
 
-(require 'all-the-icons)
+(require 'ace-window)
 (require 'auto-complete)
+(require 'auto-complete-config)
 (require 'cl-lib)
-(require 'elpy)
-(require 'go-autocomplete)
-(require 'go-eldoc)
+(require 'exec-path-from-shell)
+(require 'flycheck)
 (require 'helm)
 (require 'helm-config)
 (require 'helm-projectile)
-(require 'jedi)
+(require 'hive)
 (require 'ledger-mode)
 (require 'nlinum)
-(require 'org-bullets)
-(require 'package)
-(require 'paren)
 (require 'popwin)
+(require 'projectile)
 (require 'web-mode)
 (require 'yaml-mode)
 
@@ -32,6 +30,7 @@
 (helm-mode 1)
 (helm-projectile-on)
 (helm-autoresize-mode 1)
+(desktop-save-mode 1)
 
 (setq user-full-name "Abhinav Pandey")
 (setq user-mail-address "abhinav.predicate@gmail.com")
@@ -63,8 +62,8 @@
 (setq nlinum-highlight-current-line t)
 
 (setq helm-split-window-inside-p t)
-(setq helm-autoresize-min-height 20)
-(setq helm-autoresize-max-height 20)
+(setq helm-autoresize-min-height 30)
+(setq helm-autoresize-max-height 30)
 
 (setq org-startup-indented 1)
 (setq org-hide-leading-stars 1)
@@ -79,10 +78,14 @@
                                ("PROG" . (:foreground "orange" :underline t))))
 (setq org-done-keyword-faces '(("DONE" . (:foreground "green" :underline t))))
 (setq org-link-abbrev-alist '(("quasars"  . "file:~/Uber/Quasars/")))
+(setq org-agenda-window-setup 'current-window)
+(setq org-agenda-restore-windows-after-quit t)
+(setq org-agenda-files (list "~/Library/Mobile Documents/com~apple~CloudDocs/notes/todo"))
 
 (add-to-list 'default-frame-alist '(height . 71))
 (add-to-list 'default-frame-alist '(width . 236))
 
+(set-face-attribute 'default t :font "DejaVu Sans Mono-13")
 (set-face-attribute 'font-lock-builtin-face nil :foreground "#00b3b3")
 (set-face-attribute 'font-lock-comment-face nil :foreground "#aaaaaa" :slant 'oblique)
 (set-face-attribute 'font-lock-constant-face nil :foreground "#e23860")
@@ -100,23 +103,25 @@
 (set-face-attribute 'helm-match nil :weight 'bold)
 (set-face-attribute 'show-paren-match nil :weight 'extra-bold :foreground "grey" :background "red")
 (set-face-attribute 'nlinum-current-line nil :foreground "red" :weight 'bold)
-;; (set-face-attribute 'hl-line nil :background "#fff2cc")
 
 (defun do-nothing() (interactive))
 
 (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
 (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
 
+(global-set-key (kbd "C-c f") (lambda () (interactive) (message (buffer-file-name))))
 (global-set-key (kbd "C-c c") 'comment-region)
 (global-set-key (kbd "C-c u") 'uncomment-region)
 (global-set-key (kbd "C-x o") 'ace-window)
 (global-set-key (kbd "M-n") (lambda () (interactive) (forward-line 5)))
 (global-set-key (kbd "M-p") (lambda () (interactive) (forward-line -5)))
-(global-set-key (kbd "C-c t") 'toggle-read-only)
+(global-set-key (kbd "C-c t") 'read-only-mode)
 (global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "C-x b") 'helm-mini)
 (global-set-key (kbd "C-x C-f") 'helm-find-files)
 (global-set-key (kbd "C-c h") 'helm-command-prefix)
+(global-set-key (kbd "C-c a") 'org-agenda)
+(global-set-key (kbd "C-x g") 'magit-status)
 
 (global-set-key [wheel-left] 'do-nothing)
 (global-set-key [wheel-right] 'do-nothing)
@@ -134,54 +139,67 @@
 (add-to-list 'auto-mode-alist '("\.ledger$" . ledger-mode)) ; ledger files
 (add-to-list 'auto-mode-alist '("\.m$" . octave-mode)) ; octave or matlab files
 
-(add-hook 'find-file-hook (lambda () (setq buffer-read-only t)))
-(add-hook 'before-save-hook (lambda () (setq buffer-read-only t)))
+;; (add-hook 'find-file-hook (lambda () (setq buffer-read-only t)))
+;; (add-hook 'before-save-hook (lambda () (setq buffer-read-only t)))
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 (add-hook 'prog-mode-hook (lambda () (setq show-trailing-whitespace t)))
 (add-hook 'prog-mode-hook 'nlinum-mode)
+(add-hook 'prog-mode-hook 'flycheck-mode)
+(add-hook 'prog-mode-hook 'auto-complete-mode)
 
 (popwin-mode 1)
 (push '("^\*helm.+\*$" :regexp t) popwin:special-display-config)
-(push '("^\*vc.+\*$" :regexp t) popwin:special-display-config)
 (add-hook 'helm-after-initialize-hook
           (lambda ()
             (popwin:display-buffer helm-buffer t)
             (popwin-mode -1)))
-(add-hook 'helm-cleanup-hook
-          (lambda ()
-            (popwin-mode 1)))
+(add-hook 'helm-cleanup-hook (lambda () (popwin-mode 1)))
+
+(exec-path-from-shell-copy-env "GOPATH")
+
+(with-eval-after-load 'go-mode
+  (require 'go-autocomplete)
+  (require 'go-eldoc))
 
 (defun go-mode-setup ()
   (setq-local tab-width 2)
   (setq-local gofmt-command "goimports")
   (local-set-key (kbd "M-.") 'godef-jump)
   (local-set-key (kbd "M-,") 'pop-tag-mark)
-  (setenv "GOPATH" "/Users/abhinav.pandey/gocode")
   (add-to-list 'exec-path "Users/abhinav.pandey/gocode/bin")
   (go-eldoc-setup)
   (add-hook 'before-save-hook 'gofmt-before-save))
+
 (add-hook 'go-mode-hook 'go-mode-setup)
 
+(with-eval-after-load 'rjsx-mode
+  (require 'tern)
+  (require 'tern-auto-complete))
+
+(with-eval-after-load 'tern
+  (tern-ac-setup))
+
 (defun rjsx-mode-setup()
-  (tern-mode t)
-  (eval-after-load 'tern
-    '(progn (require 'tern-auto-complete) (tern-ac-setup))))
-(autoload 'tern-mode "tern.el" nil t)
+  (tern-mode t))
+
 (add-hook 'rjsx-mode-hook 'rjsx-mode-setup)
 
+(with-eval-after-load 'python-mode
+  (require 'jedi)
+  (require 'elpy))
+
 (defun python-mode-setup()
-  (setq-local py-use-font-lock-doc-face-p t)
-  (setq-local elpy-rpc-timeout 10)
-  (setq-local elpy-rpc-backend "jedi")
-  (setq-local jedi:complete-on-dot t)
-  (add-to-list 'ac-sources 'ac-source-jedi-direct)
+  (elpy-enable)
+  (setq elpy-rpc-backend "jedi")
+  (setq elpy-rpc-timeout 100)
+  (setq py-use-font-lock-doc-face-p t)
+  (setq jedi:complete-on-dot t)
+  (setq jedi:use-shortcuts t)
   (delete 'elpy-module-highlight-indentation elpy-modules)
   (delete 'elpy-module-django elpy-modules)
   (delete 'elpy-module-yasnippet elpy-modules)
-  (elpy-enable)
-  (flymake-mode)
-  (local-set-key (kbd "M-.") 'jedi:goto-definition)
-  (local-set-key (kbd "M-,") 'jedi:goto-definition-pop-marker))
+  (add-to-list 'ac-sources 'ac-source-jedi-direct))
+
 (add-hook 'python-mode-hook 'jedi:setup)
 (add-hook 'python-mode-hook 'python-mode-setup)
 
@@ -197,8 +215,12 @@
   (exec-path-from-shell-initialize))
 (when window-system (set-exec-path-from-shell-PATH))
 
+(with-eval-after-load 'org-mode
+  (require 'org-bullets))
+
 (defun org-mode-setup ()
   (org-bullets-mode 1)
   (org-indent-mode 1)
   (visual-line-mode 1))
+
 (add-hook 'org-mode-hook 'org-mode-setup)
