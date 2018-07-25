@@ -1,4 +1,3 @@
-
 (require 'ace-window)
 (require 'auto-complete)
 (require 'auto-complete-config)
@@ -10,7 +9,6 @@
 (require 'helm-projectile)
 (require 'hive)
 (require 'ledger-mode)
-(require 'nlinum)
 (require 'popwin)
 (require 'projectile)
 (require 'web-mode)
@@ -58,8 +56,6 @@
 (setq sentence-end-double-space nil)
 (setq show-paren-delay 0)
 (setq show-paren-style 'parenthesis)
-(setq nlinum-format " %d ")
-(setq nlinum-highlight-current-line t)
 
 (setq helm-split-window-inside-p t)
 (setq helm-autoresize-min-height 30)
@@ -82,9 +78,6 @@
 (setq org-agenda-restore-windows-after-quit t)
 (setq org-agenda-files (list "~/Library/Mobile Documents/com~apple~CloudDocs/notes/todo"))
 
-(add-to-list 'default-frame-alist '(height . 71))
-(add-to-list 'default-frame-alist '(width . 236))
-
 (set-face-attribute 'default t :font "DejaVu Sans Mono-13")
 (set-face-attribute 'font-lock-builtin-face nil :foreground "#00b3b3")
 (set-face-attribute 'font-lock-comment-face nil :foreground "#aaaaaa" :slant 'oblique)
@@ -92,7 +85,7 @@
 (set-face-attribute 'font-lock-doc-face nil :foreground "#cccccc" :slant 'italic)
 (set-face-attribute 'font-lock-string-face nil :foreground "sienna" :slant 'italic)
 (set-face-attribute 'font-lock-variable-name-face nil :foreground "orange")
-(set-face-attribute 'org-block-background nil :slant 'italic)
+(set-face-attribute 'org-block nil :slant 'italic)
 (set-face-attribute 'org-block-begin-line nil :weight 'bold)
 (set-face-attribute 'org-block-end-line nil :weight 'bold)
 (set-face-attribute 'org-level-1 nil :weight 'bold :foreground "black")
@@ -102,7 +95,6 @@
 (set-face-attribute 'org-level-5 nil :weight 'bold :foreground "black")
 (set-face-attribute 'helm-match nil :weight 'bold)
 (set-face-attribute 'show-paren-match nil :weight 'extra-bold :foreground "grey" :background "red")
-(set-face-attribute 'nlinum-current-line nil :foreground "red" :weight 'bold)
 
 (defun do-nothing() (interactive))
 
@@ -143,7 +135,7 @@
 ;; (add-hook 'before-save-hook (lambda () (setq buffer-read-only t)))
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 (add-hook 'prog-mode-hook (lambda () (setq show-trailing-whitespace t)))
-(add-hook 'prog-mode-hook 'nlinum-mode)
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
 (add-hook 'prog-mode-hook 'flycheck-mode)
 (add-hook 'prog-mode-hook 'auto-complete-mode)
 
