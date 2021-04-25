@@ -1,0 +1,154 @@
+(defun do-nothing()
+ "Utility function to make remove default key bindings do nothing."
+ (interactive))
+
+(defun init-functions()
+  "Function to estup initial modes."
+  (blink-cursor-mode 1)
+  (column-number-mode 1)
+  (global-subword-mode 1)
+  (global-hl-line-mode 1)
+  (line-number-mode 1)
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1)
+  (show-paren-mode 1)
+  (tool-bar-mode -1)
+  (winner-mode 1))
+
+(defun init-set-global-variables-default()
+  "Set default values for global variables."
+  (setq-default cursor-type 'bar)
+  (setq-default indent-tabs-mode nil)
+  (setq-default tab-width 4)
+  (setq-default c-basic-offset 4)
+  (setq-default truncate-lines t))
+
+
+(defun init-set-global-variables()
+  "Set values for global variables."
+  (setq auto-save-file-name-transforms   '((".*" "~/.emacs.d/saves/" t)))
+  (setq backup-by-copying t)
+  (setq backup-directory-alist '((".*" . "~/.emacs.d/backup")))
+  (setq confirm-kill-emacs 'yes-or-no-p)
+  (setq custom-file "~/.emacs.d/custom.el")
+  (setq delete-by-moving-to-trash t)
+  (setq dired-recursive-deletes t)
+  (setq inhibit-startup-screen t)
+  (setq mac-command-modifier 'meta)
+  (setq mac-control-modifier 'control)
+  (setq mac-option-modifier 'super)
+  (setq ns-function-modifier 'hyper)
+  (setq ring-bell-function 'ignore)
+  (setq sentence-end-double-space nil)
+  (setq show-paren-delay 0)
+  (setq show-paren-style 'parenthesis)
+  (setq user-full-name "Abhinav Pandey")
+  (setq user-mail-address "pandey.abhinav@icloud.com"))
+
+(defun init-set-global-key-bindings()
+  "Setup global key bindings."
+  (global-set-key [wheel-left] 'do-nothing)
+  (global-set-key [wheel-right] 'do-nothing)
+  (global-set-key [double-wheel-left] 'do-nothing)
+  (global-set-key [double-wheel-right] 'do-nothing)
+  (global-set-key [triple-wheel-left] 'do-nothing)
+  (global-set-key [triple-wheel-right] 'do-nothing)
+  (global-set-key (kbd "C-c a") 'org-agenda)
+  (global-set-key (kbd "C-c c") 'compile)
+  (global-set-key (kbd "C-c f") (lambda () (interactive) (message (buffer-file-name))))
+  (global-set-key (kbd "M-n") (lambda () (interactive) (line-move 5)))
+  (global-set-key (kbd "M-p") (lambda () (interactive) (line-move -5))))
+
+(defun init-set-face-attributes()
+  "Function to set face attributes for global faces."
+  (set-face-attribute 'font-lock-builtin-face nil :foreground "#00b3b3")
+  (set-face-attribute 'font-lock-comment-face nil :foreground "#aaaaaa" :slant 'oblique)
+  (set-face-attribute 'font-lock-constant-face nil :foreground "#e23860")
+  (set-face-attribute 'font-lock-doc-face nil :foreground "#cccccc" :slant 'italic)
+  (set-face-attribute 'font-lock-string-face nil :foreground "sienna" :slant 'italic)
+  (set-face-attribute 'font-lock-variable-name-face nil :foreground "orange"))
+
+
+(defun init-set-global-hooks()
+  "Function to set global hooks."
+  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+  (add-hook 'before-save-hook 'delete-trailing-whitespace))
+
+(defun init-enable-inbuilt-func()
+  "Function to enable some inbuilt functions."
+  (put 'upcase-region 'disabled nil)
+  (put 'downcase-region 'disabled nil))
+
+(init-functions)
+(init-set-global-key-bindings)
+(init-set-global-variables-default)
+(init-set-global-variables)
+(init-set-face-attributes)
+(init-set-global-hooks)
+(init-enable-inbuilt-func)
+
+(defun init-c++-mode-settings()
+  (setq c-basic-offset 4)
+  (setq compile-command
+        (concat "g++ -std=c++11 " (file-name-nondirectory buffer-file-name))))
+
+(add-hook 'c++-mode-hook 'init-c++-mode-settings)
+
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(package-initialize)
+
+(require 'use-package)
+
+(use-package ace-window
+  :ensure t
+  :demand t
+  :custom (aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+  :bind ("C-x o" . ace-window))
+
+(use-package exec-path-from-shell
+  :ensure t
+  :demand t
+  :config (exec-path-from-shell-initialize))
+
+(use-package helm
+  :ensure t
+  :demand t
+  :custom
+  (helm-split-window-inside-p t)
+  :bind (("C-c h" . helm-command-prefix)
+         ("C-x b" . helm-mini)
+         ("C-x C-f" . helm-find-files)
+         :map helm-map ("<tab>" . helm-execute-persistent-action)
+         ("M-x" . helm-M-x)))
+
+(use-package magit
+ :ensure t
+ :custom (magit-log-show-refname-after-summary t)
+ :bind ("C-x g" . magit-status))
+
+(use-package yaml-mode
+  :ensure t)
+
+(use-package org
+  :ensure t
+  :custom
+  (org-agenda-restore-windows-after-quit t)
+  (org-agenda-window-setup 'current-window)
+  (org-edit-src-content-indentation 4)
+  (org-hide-leading-stars t)
+  (org-return-follows-link t)
+  (org-src-tab-acts-natively t)
+  (org-src-window-setup 'current-window)
+  (org-startup-indented t)
+  :config
+  (visual-line-mode)
+  (variable-pitch-mode))
+
+(use-package go-mode
+  :ensure t
+  :mode "\\.go\\'"
+  :config (exec-path-from-shell-copy-env "GOPATH")
+  :hook ((before-save . lsp-format-buffer)
+         (before-save . lsp-organize-imports)
+         (go-mode . lsp-deferred)))
